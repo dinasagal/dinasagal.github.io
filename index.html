@@ -1,30 +1,63 @@
-<!doctype html>
-<html lang="en-US">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Cycle Tracker</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <h1>Period tracker</h1>
-    <form>
-      <fieldset>
-        <legend>Enter your period start and end date</legend>
-        <p>
-          <label for="start-date">Start date</label>
-          <input type="date" id="start-date" required />
-        </p>
-        <p>
-          <label for="end-date">End date</label>
-          <input type="date" id="end-date" required />
-        </p>
-      </fieldset>
-      <p>
-        <button type="submit">Add Period</button>
-      </p>
-    </form>
-    <section id="past-periods"></section>
-    <script src="app.js" defer></script>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Family Task Manager</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+
+</head>
+<body>
+
+  <h1>Family Task Manager</h1>
+  <h1>מנהל משימות משפחתי</h1>
+
+  <section id="login">
+    <input id="username" placeholder="Username" />
+    <select id="role">
+      <option value="child">Child</option>
+      <option value="parent">Parent</option>
+    </select>
+    <button onclick="login()">Login התחבר</button>
+  </section>
+
+  
+  <section id="app" hidden>
+   <h2 id="welcome"></h2>
+    <button onclick="logout()">Logout התנתק</button>
+    <button id="resetBtn" onclick="resetAppData()" hidden>Reset App</button>
+    <button id="newTaskBtn" onclick="toggleTaskForm()">+ New Task</button>
+    <div class="task-form"  id="taskForm" hidden>
+     <select id="assignTo" hidden>
+        <option value="">Assign to...</option>
+     </select>
+     <input id="taskTitle" placeholder="Task title" />
+     <textarea id="taskContent" placeholder="Task details"></textarea>
+
+     <select id="taskCategory">
+       <option value="general" data-color="#9e9e9e">General</option>
+       <option value="school" data-color="#2196f3">School</option>
+       <option value="home" data-color="#4caf50">Home</option>
+     </select>
+
+     <input id="taskDue" type="date" />
+     <div class="form-actions">
+        <button onclick="addTask()">Add Task</button>
+        <button class="secondary" onclick="toggleTaskForm()">Cancel</button>
+     </div>
+   </div>
+
+   <h3>TO DO LIST</h3>
+   <ul id="taskList"></ul>
+
+   <h3 onclick="toggleArchive()">✅ DONE</h3>
+   <ul id="archiveList"></ul>
+ </section>
+
+
+  <script src="app.js"></script>
+</body>
 </html>
+
