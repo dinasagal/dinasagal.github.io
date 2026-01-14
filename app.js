@@ -265,9 +265,9 @@ tasks = tasks.filter(t => {
 
     const li = document.createElement("li");
     li.innerHTML = `
-      <div class="task-card">
+      <div class="task-card ${t.category ? t.category.toLowerCase() : ''}">
         <strong>${t.title}</strong>
-        ${t.category ? `<span class="task-category">${t.category}</span>` : ""}
+        ${t.category ? `<span class="task-category" data-category="${t.category}">${t.category}</span>` : ""}
         <small>Due: ${dueDate}</small>
         ${t.content ? `<p>${t.content}</p>` : ""}
         <div class="task-meta">
