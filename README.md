@@ -114,8 +114,6 @@ This project was built as a learning and portfolio project to demonstrate front-
 ---
 
 ## ⚠️ Notes
-
-* Password is hardcoded (`123456`) for demo purposes only
 * Firestore security rules should be tightened for production
 * App currently requires internet access
 
@@ -127,7 +125,6 @@ This project was built as a learning and portfolio project to demonstrate front-
 * Offline Firestore caching
 * Task notifications
 * Multiple families / groups
-* Password input instead of demo password
 * Task sorting and filtering
 
 ---
