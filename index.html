@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="description" content="Family Task Manager - Tasks, Calendar, and Messaging" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FamilyTasks" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%233b82f6' width='192' height='192'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'>FT</text></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%233b82f6' width='192' height='192'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'>FT</text></svg>" />
+    <title>Family Manager PWA</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Offline Banner -->
+    <div id="offline-banner" class="offline-banner hidden">
+      📡 You are offline - viewing cached content
+    </div>
+
+    <div id="app">
+      <!-- Hamburger Button (Mobile Only) -->
+      <button id="hamburger-btn" class="hamburger-btn hidden" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- Sidebar Navigation -->
+      <nav id="sidebar" class="sidebar hidden">
+        <div class="sidebar-header">
+          <h2>Family Manager</h2>
+        </div>
+        <ul class="sidebar-nav">
+          <li><a href="#" data-section="tasks" class="nav-link active">📋 Tasks</a></li>
+          <li><a href="#" data-section="calendar" class="nav-link">📅 Calendar</a></li>
+          <li><a href="#" data-section="messages" class="nav-link">💬 Messages</a></li>
+          <li><a href="#" id="nav-settings" data-section="settings" class="nav-link">⚙️ Family Settings</a></li>
+          <li id="install-button-wrapper" class="hidden"><button id="install-button" class="nav-link-button">⬇️ Install App</button></li>
+          <li><a href="#" id="sidebar-logout" class="nav-link logout-link">🚪 Logout</a></li>
+        </ul>
+      </nav>
+
+      <!-- Main Content Area -->
+      <main id="main-content" class="main-content">
+        
+        <!-- Auth Section (Logged Out State) -->
+        <section id="auth-section" class="content-section">
+          <header class="app-header">
+            <h1>Family Manager</h1>
+            <p class="muted">PWA Skeleton • Firebase Ready</p>
+          </header>
+
+          <div class="card">
+            <h2>Phase 1 — Authentication</h2>
+            <p class="muted">Register or log in to continue.</p>
+
+            <div class="auth-toggle">
+              <button class="toggle-btn active" data-target="login">Login</button>
+              <button class="toggle-btn" data-target="register">Register</button>
+            </div>
+
+            <div class="auth-forms">
+              <form id="login-form" class="auth-form" autocomplete="on">
+                <label>
+                  Email
+                  <input type="email" name="email" required />
+                </label>
+                <label>
+                  Password
+                  <input type="password" name="password" required minlength="6" />
+                </label>
+                <button type="submit" class="primary">Login</button>
+              </form>
+
+              <form id="register-form" class="auth-form hidden" autocomplete="on">
+                <label>
+                  Email
+                  <input type="email" name="email" required />
+                </label>
+                <label>
+                  Password (min 6)
+                  <input type="password" name="password" required minlength="6" />
+                </label>
+                <button type="submit" class="primary">Register</button>
+              </form>
+            </div>
+
+            <div id="auth-error" class="error hidden" role="alert"></div>
+
+            <div id="user-panel" class="user-panel hidden">
+              <p><strong>Logged in as:</strong> <span id="user-email">—</span></p>
+              <p><strong>UID:</strong> <span id="user-uid">—</span></p>
+              <button id="logout-btn" class="ghost">Logout</button>
+            </div>
+
+            <div id="create-family-section" class="hidden">
+              <h3>Create Family</h3>
+              <form id="create-family-form" class="auth-form">
+                <label>
+                  Family Name
+                  <input type="text" name="familyName" required placeholder="e.g. The Smiths" />
+                </label>
+                <button type="submit" class="primary">Create Family</button>
+              </form>
+            </div>
+
+            <div id="family-panel" class="user-panel hidden">
+              <p><strong>Family:</strong> <span id="family-name">—</span></p>
+              <p><strong>Family ID:</strong> <span id="family-id">—</span></p>
+              <p><strong>Role:</strong> <span id="user-role">—</span></p>
+            </div>
+
+            <div class="status" id="status">Loading…</div>
+          </div>
+        </section>
+
+        <!-- Tasks Section -->
+        <section id="tasks-section" class="content-section hidden">
+          <div class="section-header">
+            <h1>📋 Tasks</h1>
+          </div>
+          
+          <!-- New Task Button -->
+          <button id="new-task-btn" class="new-task-btn">➕ New Task</button>
+          
+          <div id="task-form-card" class="card task-form-collapsed">
+            <h3>Create Task</h3>
+            <form id="task-form" class="task-form">
+              <label>
+                Title
+                <input type="text" name="title" required placeholder="e.g. Clean the kitchen" />
+              </label>
+              <label>
+                Details
+                <textarea name="content" rows="3" placeholder="Add task details..."></textarea>
+              </label>
+              <div id="assigned-user-wrapper" class="task-field">
+                <label>
+                  Assign To
+                  <select id="assigned-user" name="assignedUser"></select>
+                </label>
+              </div>
+              <label>
+                Category
+                <select id="task-category" name="category">
+                  <option value="Home" data-color="#60a5fa">Home</option>
+                  <option value="School" data-color="#34d399">School</option>
+                  <option value="Chores" data-color="#fbbf24">Chores</option>
+                  <option value="Health" data-color="#f472b6">Health</option>
+                  <option value="Other" data-color="#a78bfa">Other</option>
+                </select>
+              </label>
+              <label>
+                Due Date
+                <input type="date" name="dueDate" />
+              </label>
+              <div class="form-actions">
+                <button type="submit" class="primary">Save Task</button>
+                <button type="button" id="cancel-task-btn" class="ghost">Cancel</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="task-board-header">
+              <h3>Open Tasks</h3>
+              <button id="archive-toggle" class="ghost">Show Archive</button>
+            </div>
+            <div id="tasks-list" class="task-list"></div>
+            <div id="tasks-empty" class="task-empty hidden">No open tasks yet.</div>
+          </div>
+
+          <div id="archive-section" class="card hidden">
+            <h3>Archive</h3>
+            <div id="archive-list" class="task-list"></div>
+            <div id="archive-empty" class="task-empty hidden">No archived tasks yet.</div>
+          </div>
+        </section>
+
+        <!-- Calendar Section -->
+        <section id="calendar-section" class="content-section hidden">
+          <div class="section-header">
+            <h1>📅 Calendar</h1>
+          </div>
+          
+          <!-- Parent User Selector -->
+          <div id="calendar-user-selector" class="card hidden">
+            <label>
+              View Calendar For:
+              <select id="calendar-user-select"></select>
+            </label>
+          </div>
+
+          <!-- Calendar Controls -->
+          <div class="card">
+            <div class="calendar-header">
+              <button id="calendar-prev" class="ghost">◀ Prev</button>
+              <h2 id="calendar-month-year"></h2>
+              <button id="calendar-next" class="ghost">Next ▶</button>
+            </div>
+            
+            <!-- Calendar Grid -->
+            <div class="calendar-grid">
+              <div class="calendar-day-name">Sun</div>
+              <div class="calendar-day-name">Mon</div>
+              <div class="calendar-day-name">Tue</div>
+              <div class="calendar-day-name">Wed</div>
+              <div class="calendar-day-name">Thu</div>
+              <div class="calendar-day-name">Fri</div>
+              <div class="calendar-day-name">Sat</div>
+              <div id="calendar-days-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Event Modal -->
+        <div id="event-modal" class="modal hidden">
+          <div class="modal-content">
+            <h3 id="event-modal-title">Add Event</h3>
+            <form id="event-form">
+              <input type="hidden" id="event-id" />
+              <label>
+                Title *
+                <input type="text" id="event-title" required placeholder="Event title" />
+              </label>
+              <label>
+                Description
+                <textarea id="event-description" rows="3" placeholder="Event details..."></textarea>
+              </label>
+              <label>
+                Date *
+                <input type="date" id="event-date" required />
+              </label>
+              <label>
+                Time
+                <input type="time" id="event-time" />
+              </label>
+              <div id="event-user-wrapper" class="hidden">
+                <label>
+                  Assign To
+                  <select id="event-user-select"></select>
+                </label>
+              </div>
+              <div class="modal-actions">
+                <button type="submit" class="primary">Save</button>
+                <button type="button" id="event-delete-btn" class="ghost hidden">Delete</button>
+                <button type="button" id="event-cancel-btn" class="ghost">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Messages Section -->
+        <section id="messages-section" class="content-section hidden">
+          <div class="section-header">
+            <h1>💬 Message Board</h1>
+          </div>
+          
+          <!-- Message Input Form -->
+          <div class="card">
+            <form id="message-form">
+              <label>
+                <textarea 
+                  id="message-text" 
+                  name="text" 
+                  rows="3" 
+                  placeholder="Write a message for your family..."
+                  maxlength="500"
+                ></textarea>
+              </label>
+              <div class="form-footer">
+                <span id="message-char-count" class="muted">0 / 500</span>
+                <button type="submit" class="primary">Post Message</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Messages List -->
+          <div id="messages-list" class="messages-list"></div>
+          <div id="messages-empty" class="messages-empty hidden">
+            <p class="muted">No messages yet. Be the first to post!</p>
+          </div>
+        </section>
+
+        <!-- Family Settings Section (Parent Only) -->
+        <section id="family-settings-section" class="content-section hidden">
+          <div class="section-header">
+            <h1>⚙️ Family Settings</h1>
+            <p class="muted">Parent Only</p>
+          </div>
+          <div class="card">
+            <h3>Add Child User</h3>
+            <form id="add-child-form" class="auth-form">
+              <label>
+                Child Email
+                <input type="email" name="childEmail" required placeholder="child@example.com" />
+              </label>
+              <label>
+                Child Password (min 6)
+                <input type="password" name="childPassword" required minlength="6" />
+              </label>
+              <label>
+                Child Name (optional)
+                <input type="text" name="childName" placeholder="e.g. Sarah" />
+              </label>
+              <label>
+                Your Password (to confirm)
+                <input type="password" name="parentPassword" required minlength="6" />
+              </label>
+              <button type="submit" class="primary">Add Child User</button>
+            </form>
+
+            <div id="family-members-section" class="hidden">
+              <h4>Family Members</h4>
+              <ul id="family-members-list" class="family-list"></ul>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Mobile Sidebar Overlay -->
+      <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

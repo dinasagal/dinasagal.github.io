@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users collection
+    match /users/{userId} {
+      // Users can create their own doc (for self-registration)
+      allow create: if request.auth.uid == userId;
+      
+      // Users can read/update their own doc
+      allow read, update: if request.auth.uid == userId;
+      
+      // Parents can create child docs in their family
+      allow create: if request.auth != null && 
+                       request.resource.data.role == "child" &&
+                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "parent" &&
+                       request.resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+      
+      allow read: if request.auth != null && 
+                     (request.auth.uid == userId || 
+                      (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "parent" &&
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == resource.data.familyId));
+    }
+
+    // Families collection
+    match /families/{familyId} {
+      // Parents can create families
+      allow create: if request.auth != null && 
+                       request.resource.data.createdByUid == request.auth.uid;
+      
+      // Read: Family members can read their family doc
+      allow read: if request.auth != null && 
+                     request.auth.uid in resource.data.memberUids;
+      
+      // Update: Allow creator (parent) or existing family members
+      allow update: if request.auth != null && 
+                       (request.auth.uid == resource.data.createdByUid ||
+                        request.auth.uid in resource.data.memberUids);
+    }
+
+    // Tasks collection
+    match /tasks/{taskId} {
+      // Parents and children can create tasks in their family
+      allow create: if request.auth != null && 
+                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                       request.resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+      
+      allow read: if request.auth != null && 
+                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "parent" ||
+                      resource.data.assignedUserUid == request.auth.uid) &&
+                     resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+      
+      allow update, delete: if request.auth != null && 
+                               exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                               (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "parent" ||
+                                resource.data.assignedUserUid == request.auth.uid) &&
+                               resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+    }
+
+    // Events collection
+    match /events/{eventId} {
+      // Parents and children can create events in their family
+      allow create: if request.auth != null && 
+                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                       request.resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+      
+      // Parents can read all family events, children only their own
+      allow read: if request.auth != null && 
+                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                     (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "parent" ||
+                      resource.data.userUid == request.auth.uid) &&
+                     resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+      
+      // Parents can update/delete all family events, children only their own
+      allow update, delete: if request.auth != null && 
+                               exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                               (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "parent" ||
+                                resource.data.userUid == request.auth.uid) &&
+                               resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+    }
+
+    // Messages collection
+    match /messages/{messageId} {
+      // Family members can create messages
+      allow create: if request.auth != null && 
+                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                       request.resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+      
+      // Family members can read all family messages
+      allow read: if request.auth != null && 
+                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                     resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+      
+      // Parents can delete any message, children only their own
+      allow delete: if request.auth != null && 
+                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                       (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "parent" ||
+                        resource.data.authorUid == request.auth.uid) &&
+                       resource.data.familyId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId;
+    }
+  }
+}
